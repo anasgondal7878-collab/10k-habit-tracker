@@ -67,11 +67,11 @@
   .week-strip { display: flex; gap: 6px; margin-bottom: 18px; overflow-x: auto; padding-bottom: 2px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   .week-strip::-webkit-scrollbar { display: none; }
 
-  .day-btn { flex: 1; min-width: 50px; background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 8px 4px; cursor: pointer; text-align: center; transition: all 0.15s ease; [...] }
+  .day-btn { flex: 1; min-width: 50px; background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 8px 4px; cursor: pointer; text-align: center; transition: all 0.15s ease; }
   .day-btn.active { background: #1E1C2A; border-color: var(--amber); }
   .day-btn-label { font-size: 8px; letter-spacing: 1px; color: var(--muted); margin-bottom: 5px; font-family: 'Space Mono', monospace; }
   .day-btn-label.today-label { color: var(--amber); }
-  .day-dot { width: 28px; height: 28px; border-radius: 50%; margin: 0 auto 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; font-family: 'Space Mono', monospace; [...] }
+  .day-dot { width: 28px; height: 28px; border-radius: 50%; margin: 0 auto 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; font-family: 'Space Mono', monospace; }
   .day-dot.high { background: var(--green); color: #fff; }
   .day-dot.mid { background: var(--amber); color: #000; }
   .day-dot.low { background: var(--red); color: #fff; }
@@ -84,13 +84,13 @@
   .category { margin-bottom: 14px; }
   .category-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; padding-left: 2px; }
 
-  .habit-btn { display: flex; align-items: center; gap: 12px; width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 6px; cursor: pointer; transition: all 0.15s ease; [...] }
+  .habit-btn { display: flex; align-items: center; gap: 12px; width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 6px; cursor: pointer; transition: all 0.15s ease; }
   .habit-btn:active { transform: scale(0.98); }
   .habit-btn.locked { cursor: default; opacity: 0.65; }
   .habit-icon { font-size: 16px; flex-shrink: 0; }
   .habit-label { flex: 1; font-size: 12px; color: #9997A8; line-height: 1.4; }
   .habit-btn.done .habit-label { color: var(--text); font-weight: 700; }
-  .habit-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #3A3848; background: transparent; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; [...] }
+  .habit-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #3A3848; background: transparent; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; }
   .habit-btn.done .habit-check { border: none; }
 
   .motive-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; margin-top: 20px; }
@@ -139,18 +139,20 @@ let habitData = {}, earnings = {}, startDate = "", activeDay = "", showInstall =
 
 function getTodayKey() { 
   const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
+  const melbourneTime = new Date(today.toLocaleString('en-US', { timeZone: 'Australia/Melbourne' }));
+  const year = melbourneTime.getFullYear();
+  const month = String(melbourneTime.getMonth() + 1).padStart(2, '0');
+  const day = String(melbourneTime.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
 
 function getWeekDays() { 
   const days = []; 
-  const today = new Date(); 
+  const today = new Date();
+  const melbourneToday = new Date(today.toLocaleString('en-US', { timeZone: 'Australia/Melbourne' }));
   for (let i = 6; i >= 0; i--) { 
-    const d = new Date(today); 
-    d.setDate(today.getDate() - i); 
+    const d = new Date(melbourneToday); 
+    d.setDate(melbourneToday.getDate() - i); 
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
@@ -211,17 +213,17 @@ function render() {
   else motive = `🎯 <span style="color:#EF4444">$10K in 60 days. Today matters. Start now.</span>`;
 
   let html = ``;
-  if (showInstall) { html += `<div class="install-banner"><div style="font-size:20px">📲</div><div class="install-banner-text"><strong>Save to home screen</strong><br>iOS: tap Share → "Add to Home Screen"<br>Android: tap ⋮ → "Install app"</div><button class="install-close" onclick="dismissInstall()">✕</button></div>`; }
+  if (showInstall) { html += `<div class="install-banner"><div style="font-size:20px">📲</div><div class="install-banner-text"><strong>Save to home screen</strong><br>iOS: tap Share → "Add to Home Screen" &nbsp; | &nbsp; Android: tap ⋮ → "Install app"</div><button class="install-close" onclick="dismissInstall()">✕</button></div>`; }
   html += `<div class="header"><div class="header-eyebrow">OPERATION 10K</div><h1 class="header-title">Daily Execution<br><span>Tracker</span></h1></div>`;
-  html += `<div class="card"><div class="progress-row"><div><div class="card-eyebrow">SAVED SO FAR</div><div class="progress-amount">$${totalEarned.toLocaleString(undefined, {minimumFractionDigits:0,maximumFractionDigits:0})}</div></div><div style="text-align:right"><div class="card-eyebrow">GOAL</div><div class="progress-goal">$${GOAL.toLocaleString()}</div></div></div><div class="progress-bar-track"><div class="progress-bar-fill" style="width:${progressPct}%"></div></div><div class="progress-meta"><span>${progressPct}%</span><span class="urgent">${daysLeft} days left</span></div><div class="daily-needed">Daily needed: $${dailyNeeded.toLocaleString()}</div></div>`;
-  if (isToday) { html += `<div class="card"><div class="earnings-row"><div class="earnings-icon">💰</div><div class="earnings-input-wrap"><div class="card-eyebrow">TODAY'S EARNINGS</div><input type="number" class="earnings-input" placeholder="0" value="${earnedTodayVal}" oninput="handleEarnings(this.value)" step="0.01"></div></div></div>`; }
+  html += `<div class="card"><div class="progress-row"><div><div class="card-eyebrow">SAVED SO FAR</div><div class="progress-amount">$${totalEarned.toLocaleString(undefined, {minimumFractionDigits:0,maximumFractionDigits:0})}</div></div><div style="text-align:right"><div class="card-eyebrow">GOAL</div><div class="progress-goal">$${GOAL.toLocaleString()}</div></div></div><div class="progress-bar-track"><div class="progress-bar-fill" style="width:${progressPct}%"></div></div><div class="progress-meta"><span>${Math.round(progressPct)}% complete</span><span class="urgent">${daysLeft} days, $${dailyNeeded}/day</span></div></div>`;
+  if (isToday) { html += `<div class="card"><div class="earnings-row"><div class="earnings-icon">💰</div><div class="earnings-input-wrap"><div class="card-eyebrow">TODAY'S EARNINGS</div><input type="number" placeholder="0" value="${earnedTodayVal}" class="earnings-input" oninput="handleEarnings(this.value)" min="0"></div></div></div>`; }
   html += `<div class="week-strip">`;
   weekDays.forEach(day => { 
     const s = getDayScore(day); 
     const isActive = day === activeDay; 
     const isTodayDay = day === today; 
     const dotClass = s >= 80 ? "high" : s >= 50 ? "mid" : "low"; 
-    html += `<button class="day-btn${isActive ? " active" : ""}" onclick="setActiveDay('${day}')"><div class="day-btn-label${isTodayDay ? " today-label" : ""}">${getDayLabel(day)}</div><div class="day-dot ${dotClass}">${s}</div></button>`; 
+    html += `<button class="day-btn${isActive ? " active" : ""}" onclick="setActiveDay('${day}')"><div class="day-btn-label${isTodayDay ? " today-label" : ""}">${getDayLabel(day)}</div><div class="day-dot ${dotClass}">${s}</div><div class="day-count">${Object.keys(habitData[day] || {}).filter(k => habitData[day][k]).length}/12</div></button>`;
   });
   html += `</div>`;
   html += `<div class="section-header-row"><div class="section-title">${getDayLabel(activeDay) === "TODAY" ? "Today's" : getDayLabel(activeDay) + "'s"} Habits</div><div class="score-badge" style="color:${scoreColor}">${score}%</div></div>`;
@@ -231,7 +233,7 @@ function render() {
     habits.forEach(h => { 
       const done = todayData[h.id]; 
       const canToggle = activeDay === today; 
-      html += `<button class="habit-btn${done ? " done" : ""}${!canToggle ? " locked" : ""}" ${canToggle ? `onclick="toggleHabit('${h.id}')"` : ""}><span class="habit-icon">${h.icon}</span><span class="habit-label">${h.label}</span><div class="habit-check">${done ? "✓" : ""}</div></button>`; 
+      html += `<button class="habit-btn${done ? " done" : ""}${!canToggle ? " locked" : ""}" ${canToggle ? `onclick="toggleHabit('${h.id}')"` : ""}><span class="habit-icon">${h.icon}</span><span class="habit-label">${h.label}</span><span class="habit-check">${done ? "✓" : ""}</span></button>`; 
     }); 
     html += `</div>`; 
   });
