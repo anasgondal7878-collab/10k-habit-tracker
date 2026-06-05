@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="10K Grind">
+<meta name="theme-color" content="#0A0A0F">
+<title>Operation 10K — Daily Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0A0A0F;
+    --surface: #13121A;
+    --border: #2A2835;
+    --muted: #6B6880;
+    --text: #E8E6F0;
+    --amber: #F59E0B;
+    --green: #10B981;
+    --red: #EF4444;
+    --purple: #8B5CF6;
+    --indigo: #6366F1;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    overscroll-behavior: none;
+  }
+
+  body {
+    padding: 20px 16px 100px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .header { margin-bottom: 24px; animation: fadeUp 0.4s ease; }
+  .header-eyebrow { font-size: 10px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+  .header-title { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; line-height: 1.1; }
+  .header-title span { color: var(--amber); }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 14px; animation: fadeUp 0.4s ease; }
+  .card-eyebrow { font-size: 9px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+
+  .progress-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px; }
+  .progress-amount { font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 800; color: var(--green); }
+  .progress-goal { font-size: 16px; font-weight: 700; color: var(--muted); }
+  .progress-bar-track { background: #1E1C2A; border-radius: 4px; height: 8px; overflow: hidden; margin-bottom: 8px; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--amber)); border-radius: 4px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+  .progress-meta { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); }
+  .progress-meta .urgent { color: var(--red); }
+  .daily-needed { margin-top: 10px; background: #1A1826; border-radius: 6px; padding: 8px 12px; font-size: 12px; color: var(--amber); border-left: 3px solid var(--amber); }
+
+  .earnings-row { display: flex; align-items: center; gap: 12px; }
+  .earnings-icon { font-size: 20px; }
+  .earnings-input-wrap { flex: 1; }
+  .earnings-input { background: transparent; border: none; outline: none; color: var(--green); font-size: 20px; font-weight: 700; font-family: 'Space Mono', monospace; width: 100%; }
+  .earnings-input::placeholder { color: #3A3848; font-size: 14px; }
+  .earnings-saved { font-size: 11px; color: var(--green); }
+
+  .week-strip { display: flex; gap: 6px; margin-bottom: 18px; overflow-x: auto; padding-bottom: 2px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .week-strip::-webkit-scrollbar { display: none; }
+
+  .day-btn { flex: 1; min-width: 50px; background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 8px 4px; cursor: pointer; text-align: center; transition: all 0.15s ease; -webkit-tap-highlight-color: transparent; }
+  .day-btn.active { background: #1E1C2A; border-color: var(--amber); }
+  .day-btn-label { font-size: 8px; letter-spacing: 1px; color: var(--muted); margin-bottom: 5px; font-family: 'Space Mono', monospace; }
+  .day-btn-label.today-label { color: var(--amber); }
+  .day-dot { width: 28px; height: 28px; border-radius: 50%; margin: 0 auto 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; font-family: 'Space Mono', monospace; background: #1E1C2A; color: var(--muted); }
+  .day-dot.high { background: var(--green); color: #fff; }
+  .day-dot.mid { background: var(--amber); color: #000; }
+  .day-dot.low { background: var(--red); color: #fff; }
+  .day-count { font-size: 8px; color: var(--muted); font-family: 'Space Mono', monospace; }
+
+  .section-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .section-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .score-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: #1E1C2A; }
+
+  .category { margin-bottom: 14px; }
+  .category-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; padding-left: 2px; }
+
+  .habit-btn { display: flex; align-items: center; gap: 12px; width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 6px; cursor: pointer; text-align: left; transition: all 0.15s ease; -webkit-tap-highlight-color: transparent; font-family: 'Space Mono', monospace; }
+  .habit-btn:active { transform: scale(0.98); }
+  .habit-btn.locked { cursor: default; opacity: 0.65; }
+  .habit-icon { font-size: 16px; flex-shrink: 0; }
+  .habit-label { flex: 1; font-size: 12px; color: #9997A8; line-height: 1.4; }
+  .habit-btn.done .habit-label { color: var(--text); font-weight: 700; }
+  .habit-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #3A3848; background: transparent; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 11px; color: #fff; transition: all 0.15s ease; }
+  .habit-btn.done .habit-check { border: none; }
+
+  .motive-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; margin-top: 20px; }
+  .motive-msg { font-size: 13px; margin-bottom: 8px; }
+  .motive-stats { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+
+  .install-banner { background: #1A1826; border: 1px solid var(--amber); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; animation: fadeUp 0.5s ease; }
+  .install-banner-text { flex: 1; font-size: 11px; color: var(--amber); line-height: 1.5; }
+  .install-close { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 0 4px; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const HABITS = [
+  { id: "wake",       label: "Wake at 9AM",                      icon: "☀️", cat: "morning" },
+  { id: "noPhone",    label: "No phone first 30 min",             icon: "📵", cat: "morning" },
+  { id: "breakfast",  label: "Breakfast + ready by 10:30",        icon: "🍳", cat: "morning" },
+  { id: "deepWork1",  label: "On the road 11AM — no late starts", icon: "🚗", cat: "work1" },
+  { id: "phoneAway",  label: "Phone calls only during work",      icon: "📦", cat: "work1" },
+  { id: "noApp",      label: "No social media during shift",      icon: "🚫", cat: "work1" },
+  { id: "lunch",      label: "Lunch break 2–3PM",                 icon: "🥗", cat: "break" },
+  { id: "back4",      label: "Back on road by 4PM sharp",         icon: "⚡", cat: "work2" },
+  { id: "hours12",    label: "12 hours completed today",          icon: "⏱️", cat: "work2" },
+  { id: "logEarnings",label: "Log today's earnings",              icon: "💰", cat: "evening" },
+  { id: "planTmr",    label: "Planned tomorrow tonight",          icon: "📋", cat: "evening" },
+  { id: "noBedPhone", label: "No phone in bed",                   icon: "🌙", cat: "evening" },
+];
+
+HABITS[9].label = "Log today's earnings";
+
+const CATS = {
+  morning: { label: "Morning Routine",         color: "#F59E0B" },
+  work1:   { label: "Morning Shift · 11AM–2PM", color: "#10B981" },
+  break:   { label: "Afternoon Break",          color: "#6366F1" },
+  work2:   { label: "Afternoon Shift · 4PM–Night", color: "#EF4444" },
+  evening: { label: "Evening Wind-Down",        color: "#8B5CF6" },
+};
+
+const GOAL = 10000;
+const DAYS_TARGET = 60;
+
+let habitData = {}, earnings = {}, startDate = "", activeDay = "", showInstall = true;
+
+function getTodayKey() { return new Date().toISOString().split("T")[0]; }
+function getWeekDays() { const days = []; const today = new Date(); for (let i = 6; i >= 0; i--) { const d = new Date(today); d.setDate(today.getDate() - i); days.push(d.toISOString().split("T")[0]); } return days; }
+function getDayLabel(ds) { const today = getTodayKey(); if (ds === today) return "TODAY"; const d = new Date(ds + "T12:00:00"); return d.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase(); }
+function getDayScore(dayKey) { const d = habitData[dayKey] || {}; const done = HABITS.filter(h => d[h.id]).length; return Math.round((done / HABITS.length) * 100); }
+
+function loadData() {
+  try { habitData = JSON.parse(localStorage.getItem("op10k_habits") || "{}"); } catch { habitData = {}; }
+  try { earnings = JSON.parse(localStorage.getItem("op10k_earnings") || "{}"); } catch { earnings = {}; }
+  startDate = localStorage.getItem("op10k_start") || getTodayKey();
+  if (!localStorage.getItem("op10k_start")) localStorage.setItem("op10k_start", startDate);
+  showInstall = localStorage.getItem("op10k_install_dismissed") !== "1";
+  activeDay = getTodayKey();
+}
+
+function saveHabits() { localStorage.setItem("op10k_habits", JSON.stringify(habitData)); }
+function saveEarnings() { localStorage.setItem("op10k_earnings", JSON.stringify(earnings)); }
+function toggleHabit(id) { if (activeDay !== getTodayKey()) return; if (!habitData[activeDay]) habitData[activeDay] = {}; habitData[activeDay][id] = !habitData[activeDay][id]; saveHabits(); render(); }
+function setEarningsToday(val) { const num = parseFloat(val); if (!isNaN(num) && num >= 0) earnings[activeDay] = num; else if (val === "" || val === undefined) delete earnings[activeDay]; saveEarnings(); render(); }
+function setActiveDay(d) { activeDay = d; render(); }
+function dismissInstall() { showInstall = false; localStorage.setItem("op10k_install_dismissed", "1"); render(); }
+
+function render() {
+  const today = getTodayKey();
+  const isToday = activeDay === today;
+  const weekDays = getWeekDays();
+  const totalEarned = Object.values(earnings).reduce((a, b) => a + (parseFloat(b) || 0), 0);
+  const daysWorked = Object.keys(earnings).filter(k => (parseFloat(earnings[k]) || 0) > 0).length;
+  const daysLeft = Math.max(0, DAYS_TARGET - daysWorked);
+  const remaining = Math.max(0, GOAL - totalEarned);
+  const dailyNeeded = daysLeft > 0 ? Math.ceil(remaining / daysLeft) : 0;
+  const progressPct = Math.min((totalEarned / GOAL) * 100, 100).toFixed(1);
+  const todayData = habitData[activeDay] || {};
+  const completedCount = HABITS.filter(h => todayData[h.id]).length;
+  const score = Math.round((completedCount / HABITS.length) * 100);
+  const scoreColor = score >= 80 ? "#10B981" : score >= 50 ? "#F59E0B" : "#EF4444";
+  const earnedTodayVal = earnings[activeDay] !== undefined ? earnings[activeDay] : "";
+  const grouped = {}; HABITS.forEach(h => { if (!grouped[h.cat]) grouped[h.cat] = []; grouped[h.cat].push(h); });
+  let motive = "";
+  if (score === 100) motive = `🏆 <span style="color:#10B981;font-weight:700">Perfect day. Debt doesn't stand a chance.</span>`;
+  else if (score >= 70) motive = `💪 <span style="color:#F59E0B">Strong day. Finish what's left.</span>`;
+  else if (score >= 40) motive = `⚡ <span style="color:#6B6880">You're behind. Every habit skipped = money lost.</span>`;
+  else motive = `🎯 <span style="color:#EF4444">$10K in 60 days. Today matters. Start now.</span>`;
+
+  let html = ``;
+  if (showInstall) { html += `<div class="install-banner"><div style="font-size:20px">📲</div><div class="install-banner-text"><strong>Save to home screen</strong><br>iOS: tap Share → "Add to Home Screen"<br>Android: tap menu → "Add to Home Screen"</div><button class="install-close" onclick="dismissInstall()">✕</button></div>`; }
+  html += `<div class="header"><div class="header-eyebrow">OPERATION 10K</div><h1 class="header-title">Daily Execution<br><span>Tracker</span></h1></div>`;
+  html += `<div class="card"><div class="progress-row"><div><div class="card-eyebrow">SAVED SO FAR</div><div class="progress-amount">$${totalEarned.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0})}</div></div><div style="text-align:right"><div class="card-eyebrow">GOAL</div><div class="progress-goal">$10,000</div></div></div><div class="progress-bar-track"><div class="progress-bar-fill" style="width:${progressPct}%"></div></div><div class="progress-meta"><span>${progressPct}% complete</span><span class="${daysLeft < 10 ? 'urgent' : ''}">$${remaining.toLocaleString()} left · ${daysLeft} days</span></div>${daysLeft > 0 && remaining > 0 ? `<div class="daily-needed">Need <strong>$${dailyNeeded.toLocaleString()}</strong>/day for the next ${daysLeft} days</div>` : remaining <= 0 ? `<div class="daily-needed" style="color:#10B981;border-color:#10B981">🎉 GOAL REACHED! You did it!</div>` : ""}</div>`;
+  if (isToday) { html += `<div class="card"><div class="earnings-row"><div class="earnings-icon">💰</div><div class="earnings-input-wrap"><div class="card-eyebrow">TODAY'S EARNINGS</div><input class="earnings-input" type="number" inputmode="decimal" placeholder="Enter total earned today..." value="${earnedTodayVal}" oninput="handleEarnings(this.value)" id="earningsInput" /></div>${earnedTodayVal !== "" ? `<span class="earnings-saved">✓ saved</span>` : ""}</div></div>`; }
+  html += `<div class="week-strip">`; weekDays.forEach(day => { const s = getDayScore(day); const isActive = day === activeDay; const isTodayDay = day === today; const dotClass = s >= 80 ? "high" : s >= 50 ? "mid" : s > 0 ? "low" : ""; html += `<button class="day-btn ${isActive ? "active" : ""}" onclick="setActiveDay('${day}')"><div class="day-btn-label ${isTodayDay ? "today-label" : ""}">${getDayLabel(day)}</div><div class="day-dot ${dotClass}">${s > 0 ? s : "–"}</div><div class="day-count">${HABITS.filter(h => (habitData[day]||{})[h.id]).length}/${HABITS.length}</div></button>`; }); html += `</div>`;
+  html += `<div class="section-header-row"><div class="section-title">${getDayLabel(activeDay) === "TODAY" ? "Today's" : getDayLabel(activeDay) + "'s"} Habits</div><div class="score-badge" style="color:${scoreColor}">${completedCount}/${HABITS.length} · ${score}%</div></div>`;
+  Object.entries(grouped).forEach(([cat, habits]) => { const catInfo = CATS[cat]; html += `<div class="category"><div class="category-label" style="color:${catInfo.color}">${catInfo.label}</div>`; habits.forEach(h => { const done = !!(habitData[activeDay] || {})[h.id]; const locked = !isToday; html += `<button class="habit-btn ${done ? "done" : ""} ${locked ? "locked" : ""}" style="${done ? `background:${catInfo.color}18;border-color:${catInfo.color}40` : ""}" onclick="${locked ? "" : `toggleHabit('${h.id}')`}" ${locked ? "disabled" : ""}><span class="habit-icon">${h.icon}</span><span class="habit-label">${h.label}</span><div class="habit-check" style="${done ? `background:${catInfo.color}` : ""}">${done ? "✓" : ""}</div></button>`; }); html += `</div>`; });
+  html += `<div class="motive-card"><div class="motive-msg">${motive}</div><div class="motive-stats">${daysWorked} DAYS WORKED &nbsp;·&nbsp; $${totalEarned.toLocaleString()} SAVED</div></div>`;
+  document.getElementById("app").innerHTML = html;
+}
+
+let earningsTimer;
+function handleEarnings(val) { clearTimeout(earningsTimer); earningsTimer = setTimeout(() => setEarningsToday(val), 400); }
+
+loadData();
+render();
+</script>
+</body>
+</html>
